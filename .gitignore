@@ -1,8 +1,7 @@
 *
-!*/
+!/**/
 !*.*
-runtime/
-regression/
-src/*.o
-src/*.s
-src/*.i 
+regression/**
+/**/*.o
+/**/*.s
+/**/*.i
