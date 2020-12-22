@@ -154,6 +154,7 @@ case expr of
 	| Fun (name, args, body) -> (*printf("%s %s %s\n", name.string, args.string, body.string);*)[[addFunction (state, name, args, body), world], Void]
 esac
 }
+(* End *)
 
 -- Evaluates a program with a given input and returns an output
 public fun evalExpr (input, expr) {

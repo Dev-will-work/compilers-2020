@@ -158,12 +158,28 @@ local primary  = memo $ eta syntax (
 								kLocal def_part=local_tail s[";"]  { Local (def_part) } |
 								kFun name=lident arguments=inbr[s("("), list0 (lident) , s(")")] body=inbr[s("{"), scopeExpr, s("}")] {Fun (name, arguments, body(Weak))}
 								),
-				    scopeExpr = memo $ eta syntax (
+				    MyscopeExpr = memo $ eta syntax (
 								definitions=rep[def] e=exp {fun (attr) {(*printf ("%s", definitions.string);*)expandScope (definitions, e(attr))}} |
 								definitions=rep[def] {fun (attr) {(*printf ("%s", definitions.string);*)expandScope (definitions, Skip)}} |
 								e=exp {fun (attr) {(*printf ("%s", e.string);*)expandScope ({}, e(attr))}} 
 								),
 (* End *)
+	      ScopeExpr  = memo $ eta syntax (ds=definition* e=exp? {fun (a) {fun (e) {
+                                                                        case ds of
+                                                                          {} -> e
+                                                                        | _  -> expandScope (ds, e) 
+                                                                        esac
+                                                                      } (case e of 
+                                                                           Some (e) -> e (a)
+                                                                         | _        -> Skip
+                                                                         esac)
+                                                                      }}),
+      definition = memo $ eta syntax (kLocal ds=list[syntax (lident (s["="] e=basic {e (Val)})?)] s[";"] {Local (ds)} |
+                                      kFun name=lident
+                                           args=inbr[s("("), list0 (lident), s(")")]
+                                           body=inbr[s("{"), scopeExpr, s("}")] {
+                                           Fun (name, args, body (Weak))
+                                      }
       basic    = memo $ eta (expr ({[Right, singleton ([s (":="),
                                                         fun (l, loc, r) {
                                                           fun (a) {(*printf ("%s %s\n", a.string, Assn (l, r).string);*)assertValue (a, Assn (l (Ref), r (Val)), loc)}
